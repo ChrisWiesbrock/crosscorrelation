@@ -5,6 +5,9 @@ Created on Tue Aug 25 15:01:02 2020
 @author: wiesbrock
 """
 
+from IPython import get_ipython
+get_ipython().magic('reset -sf')
+
 import numpy as np
 import glob
 import matplotlib.pyplot as plt
