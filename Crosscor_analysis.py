@@ -369,7 +369,7 @@ control=control_a[100:200]
 names=list(control.columns)
 corr_matrx=np.zeros((len(names),len(names)))
 index_max_corr=np.zeros((len(names),len(names)))
-b=np.zeros((80,1))
+b=np.zeros((40,1))
 for i in range(len(names)):
     for k in range(len(names)):
         for n in range(40):
