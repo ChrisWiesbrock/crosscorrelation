@@ -28,7 +28,7 @@ import scikit_posthocs as sp
 #autocorr in einzelne Ordner
 
 
-folder=r'C:\Users\wiesbrock\Desktop\corrupted\video'
+folder=r'C:\Users\wiesbrock\Desktop\corrupted2\190421_2.3\video'
 search=folder+'*'
 folder_list=glob.glob(search)
 os.chdir(folder)
@@ -40,7 +40,7 @@ try:
 except:
     print('Folder already exists')
 
-control='C:\\Users\\wiesbrock\\Desktop\\video'
+control=r'C:\Users\wiesbrock\Desktop\Ctrl\New\1904045.1\video'
 control_search=folder+'*'
 control_folder_list=glob.glob(search)
 
@@ -99,7 +99,7 @@ for m in range(len(folder_list)):
         peak_diff=peak_diff
         number_of_peaks=len(peak_diff[peak_diff>=10])
         peaks_all[v]=number_of_peaks+1
-        plt.figure(v)
+        plt.figure()
         plt.title(files[30:]+' '+i+ 'peaks='+str(number_of_peaks+1))
         plt.axis('off')
         ax=plt.subplot()
@@ -125,7 +125,7 @@ pre=d[0:start]
 names=list(d.columns)
 corr_matrx=np.zeros((len(names),len(names)))
 index_max_corr=np.zeros((len(names),len(names)))
-b=np.zeros((100,1))
+b=np.zeros((40,1))
 for i in range(len(names)):
     for k in range(len(names)):
         for n in range(40):
@@ -138,7 +138,7 @@ for i in range(len(names)):
 pre_matrix_1=np.reshape(corr_matrx,(len(corr_matrx)**2,1))
 pre_matrix_1=pre_matrix_1[pre_matrix_1<1]
 
-plt.figure(v+1)
+plt.figure()
 plt.title('Prestim1')
 sns.heatmap(corr_matrx, cmap='Greys')
 plt.ylim(len(corr_matrx)+0.5,0-0.5)
@@ -148,7 +148,7 @@ plt.xlabel('Cell ID')
 
 plt.savefig(folder+'\\plots\\prestim_1_corr.svg')
 
-plt.figure(v+2)
+plt.figure()
 plt.title('Prestim1 Lag')
 sns.heatmap(index_max_corr, cmap='Greys')
 plt.ylim(len(corr_matrx)+0.5,0-0.5)
@@ -169,7 +169,7 @@ pre=d[100:start+100]
 names=list(d.columns)
 corr_matrx=np.zeros((len(names),len(names)))
 index_max_corr=np.zeros((len(names),len(names)))
-b=np.zeros((100,1))
+b=np.zeros((40,1))
 for i in range(len(names)):
     for k in range(len(names)):
         for n in range(40):
@@ -182,7 +182,7 @@ for i in range(len(names)):
 pre_matrix_2=np.reshape(corr_matrx,(len(corr_matrx)**2,1))
 pre_matrix_2=pre_matrix_2[pre_matrix_2<1]
 
-plt.figure(v+3)
+plt.figure()
 plt.title('Prestim_2')
 sns.heatmap(corr_matrx, cmap='Greys')
 plt.ylim(len(corr_matrx)+0.5,0-0.5)
@@ -192,7 +192,7 @@ plt.xlabel('Cell ID')
 
 plt.savefig(folder+'\\plots\\prestim_2_corr.svg')
 
-plt.figure(v+4)
+plt.figure()
 plt.title('Prestim_2 Lag')
 sns.heatmap(index_max_corr, cmap='Greys')
 plt.ylim(len(corr_matrx)+0.5,0-0.5)
@@ -214,7 +214,7 @@ stim=d[start:stop]
 names=list(d.columns)
 corr_matrx=np.zeros((len(names),len(names)))
 index_max_corr=np.zeros((len(names),len(names)))
-b=np.zeros((100,1))
+b=np.zeros((40,1))
 for i in range(len(names)):
     for k in range(len(names)):
         for n in range(40):
@@ -225,7 +225,7 @@ for i in range(len(names)):
 stim_matrix=np.reshape(corr_matrx,(len(corr_matrx)**2,1))
 stim_matrix=stim_matrix[stim_matrix<1]
 
-plt.figure(v+5)
+plt.figure()
 plt.title('stim')
 sns.heatmap(corr_matrx, cmap='Greys')
 plt.ylim(len(corr_matrx)+0.5,0-0.5)
@@ -235,7 +235,7 @@ plt.xlabel('Cell ID')
 
 plt.savefig(folder+'\\plots\\stim_corr.svg')
 
-plt.figure(v+6)
+plt.figure()
 plt.title('stim Lag')
 sns.heatmap(index_max_corr, cmap='Greys')
 plt.ylim(len(corr_matrx)+0.5,0-0.5)
@@ -255,7 +255,7 @@ post=d[start:start+100]
 names=list(d.columns)
 corr_matrx=np.zeros((len(names),len(names)))
 index_max_corr=np.zeros((len(names),len(names)))
-b=np.zeros((100,1))
+b=np.zeros((40,1))
 for i in range(len(names)):
     for k in range(len(names)):
         for n in range(40):
@@ -268,7 +268,7 @@ for i in range(len(names)):
 post_matrix_1=np.reshape(corr_matrx,(len(corr_matrx)**2,1))
 post_matrix_1=post_matrix_1[post_matrix_1<1]
 
-plt.figure(v+7)
+plt.figure()
 plt.title('poststim1')
 sns.heatmap(corr_matrx, cmap='Greys')
 plt.ylim(len(corr_matrx)+0.5,0-0.5)
@@ -278,7 +278,7 @@ plt.xlabel('Cell ID')
 
 plt.savefig(folder+'\\plots\\poststim_1_corr.svg')
 
-plt.figure(v+8)
+plt.figure()
 plt.title('poststim1 Lag')
 sns.heatmap(index_max_corr, cmap='Greys')
 plt.ylim(len(corr_matrx)+0.5,0-0.5)
@@ -299,7 +299,7 @@ post=d[-100:]
 names=list(d.columns)
 corr_matrx=np.zeros((len(names),len(names)))
 index_max_corr=np.zeros((len(names),len(names)))
-b=np.zeros((100,1))
+b=np.zeros((40,1))
 for i in range(len(names)):
     for k in range(len(names)):
         for n in range(40):
@@ -312,7 +312,7 @@ for i in range(len(names)):
 post_matrix_2=np.reshape(corr_matrx,(len(corr_matrx)**2,1))
 post_matrix_2=post_matrix_2[post_matrix_2<1]
 
-plt.figure(v+9)
+plt.figure()
 plt.title('poststim2')
 sns.heatmap(corr_matrx, cmap='Greys')
 plt.ylim(len(corr_matrx)+0.5,0-0.5)
@@ -322,7 +322,7 @@ plt.xlabel('Cell ID')
 
 plt.savefig(folder+'\\plots\\poststim_2_corr.svg')
 
-plt.figure(v+10)
+plt.figure()
 plt.title('poststim2 Lag')
 sns.heatmap(index_max_corr, cmap='Greys')
 plt.ylim(len(corr_matrx)+0.5,0-0.5)
@@ -356,7 +356,7 @@ for i in header:
         peak_diff=peak_diff
         number_of_peaks=len(peak_diff[peak_diff>=10])
         peaks_all[v]=number_of_peaks+1
-        plt.figure(v+110)
+        plt.figure()
         plt.title(files[30:]+' '+i+ 'peaks='+str(number_of_peaks+1))
         plt.axis('off')
         ax=plt.subplot()
@@ -365,8 +365,8 @@ for i in header:
         plt.savefig(folder+'\\plots\\control_single traces\\' +i+'.svg')
         v=v+1
 
-control=control_a[100:200]
-names=list(control.columns)
+control=control_a[0:200]
+names=header
 corr_matrx=np.zeros((len(names),len(names)))
 index_max_corr=np.zeros((len(names),len(names)))
 b=np.zeros((40,1))
@@ -382,7 +382,7 @@ for i in range(len(names)):
 control_matrix=np.reshape(corr_matrx,(len(corr_matrx)**2,1))
 control_matrix=control_matrix[control_matrix<1]
 
-plt.figure(v+12)
+plt.figure()
 plt.title('control')
 sns.heatmap(corr_matrx, cmap='Greys')
 plt.ylim(len(corr_matrx)+0.5,0-0.5)
@@ -392,7 +392,7 @@ plt.xlabel('Cell ID')
 
 plt.savefig(folder+'\\plots\\control_corr.svg')
 
-plt.figure(v+13)
+plt.figure()
 plt.title('Control Lag')
 sns.heatmap(index_max_corr, cmap='Greys')
 plt.ylim(len(corr_matrx)+0.5,0-0.5)
@@ -408,7 +408,7 @@ start=int(intervall[3][1])
 a=d[0:start]
 names=list(d.columns)
 corr_matrix_pre1=np.zeros((80,len(names)))
-b=np.zeros((80,1))
+b=np.zeros((40,1))
 for i in range(len(names)):
         for n in range(80):
             k=n-40
@@ -432,7 +432,7 @@ start=int(intervall[3][1])
 a=d[100:200]
 names=list(d.columns)
 corr_matrix_pre2=np.zeros((80,len(names)))
-b=np.zeros((80,1))
+b=np.zeros((40,1))
 for i in range(len(names)):
         for n in range(80):
             k=n-40
@@ -456,7 +456,7 @@ stop=int(intervall[2][3])
 a=d[start:stop]
 names=list(d.columns)
 corr_matrix_stim=np.zeros((80,len(names)))
-b=np.zeros((80,1))
+b=np.zeros((40,1))
 for i in range(len(names)):
         for n in range(80):
             k=n-40
@@ -479,7 +479,7 @@ start=int(intervall[3][2])
 a=d[start:]
 names=list(d.columns)
 corr_matrix_post1=np.zeros((80,len(names)))
-b=np.zeros((80,1))
+b=np.zeros((40,1))
 for i in range(len(names)):
         for n in range(80):
             k=n-40
@@ -502,7 +502,7 @@ start=int(intervall[3][2])
 a=d[-100:]
 names=list(d.columns)
 corr_matrix_post2=np.zeros((80,len(names)))
-b=np.zeros((80,1))
+b=np.zeros((40,1))
 for i in range(len(names)):
         for n in range(80):
             k=n-40
@@ -523,9 +523,9 @@ for i in range(len(names)):
 #autocorr ctrl  
 start=int(intervall[3][2])
 a=control_a[-100:]
-names=list(d.columns)
+names=list(a.columns)
 corr_matrix_autoctrl=np.zeros((80,len(names)))
-b=np.zeros((80,1))
+b=np.zeros((40,1))
 for i in range(len(names)):
         for n in range(80):
             k=n-40
@@ -552,7 +552,7 @@ sns.set_palette("rocket_r")
 f, (ax_swarm, ax_hist) = plt.subplots(1,2, sharey=True, gridspec_kw={"width_ratios": (.85, .15)})
 
 plot_data=pre_matrix_1[pre_matrix_1<0.99],pre_matrix_2[pre_matrix_2<0.99],stim_matrix[stim_matrix<0.99],post_matrix_1[post_matrix_1<0.99],post_matrix_2[post_matrix_2<0.99],control_matrix[control_matrix<0.99]
-plt.figure(v+14)
+plt.figure()
 sns.violinplot(data=plot_data,ax=ax_swarm).set_title('Crosscorrelation')
 #plt.sca(f[ax_swarm])
 #plt.xticks((0,1,2,3,4,5), ['Pre1','Pre2','Stim','Post1','Post2', 'Ctrl'])
@@ -594,7 +594,7 @@ f, (ax_swarm, ax_hist) = plt.subplots(1,2, sharey=True, gridspec_kw={"width_rati
 
 plot_data=pre_matrix_1[pre_matrix_1<0.99],pre_matrix_2[pre_matrix_2<0.99],stim_matrix[stim_matrix<0.99],post_matrix_1[post_matrix_1<0.99],post_matrix_2[post_matrix_2<0.99],control_matrix[control_matrix<0.99]
 
-plt.figure(v+15)
+plt.figure()
 sns.violinplot(data=plot_data,ax=ax_swarm).set_title('Autocorrelation')
 #plt.sca(f[ax_swarm])
 #plt.xticks((0,1,2,3,4,5), ['Pre1','Pre2','Stim','Post1','Post2', 'Ctrl'])
@@ -628,4 +628,3 @@ with open('stats.txt', 'w') as f:
     f.write(str(stats_matrix_corr))
     f.write(str(stats_matrix_auto))
     f.close()
-
