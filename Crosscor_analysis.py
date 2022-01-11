@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 """
+Created on Tue Jan 11 09:51:12 2022
+
+@author: Chris
+"""
+
+# -*- coding: utf-8 -*-
+"""
 Created on Tue Aug 25 15:01:02 2020
 
 @author: wiesbrock
@@ -408,7 +415,7 @@ start=int(intervall[3][1])
 a=d[0:start]
 names=list(d.columns)
 corr_matrix_pre1=np.zeros((80,len(names)))
-b=np.zeros((40,1))
+b=np.zeros((80,1))
 for i in range(len(names)):
         for n in range(80):
             k=n-40
@@ -432,7 +439,7 @@ start=int(intervall[3][1])
 a=d[100:200]
 names=list(d.columns)
 corr_matrix_pre2=np.zeros((80,len(names)))
-b=np.zeros((40,1))
+b=np.zeros((80,1))
 for i in range(len(names)):
         for n in range(80):
             k=n-40
@@ -456,7 +463,7 @@ stop=int(intervall[2][3])
 a=d[start:stop]
 names=list(d.columns)
 corr_matrix_stim=np.zeros((80,len(names)))
-b=np.zeros((40,1))
+b=np.zeros((80,1))
 for i in range(len(names)):
         for n in range(80):
             k=n-40
@@ -479,7 +486,7 @@ start=int(intervall[3][2])
 a=d[start:]
 names=list(d.columns)
 corr_matrix_post1=np.zeros((80,len(names)))
-b=np.zeros((40,1))
+b=np.zeros((80,1))
 for i in range(len(names)):
         for n in range(80):
             k=n-40
@@ -502,7 +509,7 @@ start=int(intervall[3][2])
 a=d[-100:]
 names=list(d.columns)
 corr_matrix_post2=np.zeros((80,len(names)))
-b=np.zeros((40,1))
+b=np.zeros((80,1))
 for i in range(len(names)):
         for n in range(80):
             k=n-40
@@ -525,7 +532,7 @@ start=int(intervall[3][2])
 a=control_a[-100:]
 names=list(a.columns)
 corr_matrix_autoctrl=np.zeros((80,len(names)))
-b=np.zeros((40,1))
+b=np.zeros((80,1))
 for i in range(len(names)):
         for n in range(80):
             k=n-40
