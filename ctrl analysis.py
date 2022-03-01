@@ -35,6 +35,13 @@ def crosscorr(datax, datay, lag=0):
 folder=r'C:\Users\wiesbrock\Desktop\Analysen\Ctrl'
 folder_list=folder+'\\*'
 folder_list=glob.glob(folder_list)
+
+os.chdir(folder)
+try:
+    os.mkdir('plots')
+except:
+    print('Folder already exists')
+    
 peak_list=[]
 std_list=[]
 dist_peaks=[]
