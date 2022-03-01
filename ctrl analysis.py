@@ -274,6 +274,7 @@ for i in folder_list:
         plt.xlabel('Z score')
         plt.plot(edges[:-1],hist)
         dist_peaks.append(edges[np.where(hist==np.max(hist))][0])
+        plt.savefig(folder+'\\plots\\Zhist.svg')
    
         for k in range(len(names)):
             for n in range(40):
@@ -293,6 +294,7 @@ sns.violinplot(data=plot_data).set_title('Crosscorrelation')
 #plt.sca(f[ax_swarm])
 #plt.xticks((0,1,2,3,4,5), ['Pre1','Pre2','Stim','Post1','Post2', 'Ctrl'])
 plt.xticks(range(5),['Win1','Win2','Win3','Win4','Win5'])
+plt.savefig(folder+'\\plots\\Crosscorrelation Overview.svg')
 
                 
                 
