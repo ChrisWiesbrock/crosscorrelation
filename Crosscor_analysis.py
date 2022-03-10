@@ -1,12 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Jan 11 09:51:12 2022
-
-@author: Chris
-"""
-
-# -*- coding: utf-8 -*-
-"""
 Created on Tue Aug 25 15:01:02 2020
 
 @author: wiesbrock
@@ -35,7 +28,7 @@ import scikit_posthocs as sp
 #autocorr in einzelne Ordner
 
 
-folder=r'C:\Users\wiesbrock\Desktop\corrupted2\190421_2.3\video'
+folder=r'C:\Users\wiesbrock\Desktop\Analysen\Neuefehler\180927_1.1\video'
 search=folder+'*'
 folder_list=glob.glob(search)
 os.chdir(folder)
@@ -47,7 +40,7 @@ try:
 except:
     print('Folder already exists')
 
-control=r'C:\Users\wiesbrock\Desktop\Ctrl\New\1904045.1\video'
+control=r'C:\Users\wiesbrock\Desktop\Analysen\Neuefehler\ctrl\161122_2\video'
 control_search=folder+'*'
 control_folder_list=glob.glob(search)
 
