@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Aug 25 15:01:02 2020
+Created on Sun Jul 10 15:01:59 2022
 
 @author: wiesbrock
 """
 
 from IPython import get_ipython
-get_ipython().magic('reset -sf')
+#get_ipython().magic('reset -sf')
 
 import numpy as np
 import glob
@@ -17,15 +17,8 @@ import scipy.stats as stats
 import seaborn as sns
 import scikit_posthocs as sp
 
-#Kriterium für Traces -check
-#pre fenster direkt davor und post fenster ans Ende der Messung, beide fenster testen, -check
-#violin plots nicht größer 1 -check violins sind raus
-#kein rainbow-colorscheme, -check
-#lag nur die Hälfte auf 40 -check
-#Autocorrelation Histogramme, Mindestaktivität -was wollten wir da nochmal? Activity im Stim-Fenster?
-#Kontrollen -check
-
-#autocorr in einzelne Ordner
+#activity maske -> Werte rauswerfen
+#activity maske -> Aktivitätswerte in excel
 
 
 folder=r'C:\Users\wiesbrock\Desktop\Analysen\Neuefehler\180927_1.1\video'
@@ -57,7 +50,6 @@ def crosscorr(datax, datay, lag=0):
     ----------
     lag : int, default 0
     datax, datay : pandas.Series objects of equal length
-
     Returns
     ----------
     crosscorr : float
@@ -87,9 +79,10 @@ for m in range(len(folder_list)):
     a=df['detrended']
     stimulus_length=int(intervall[3][2])-int(intervall[2][2])-1
     header=list(a.columns.values)
-
+    activity_overview=np.zeros((5,np.shape(a)[1]))
     v=0
     peaks_all=np.zeros((len(header),1))
+    j=0
     for i in header:
         
         zscore=stats.zscore(a[i])
@@ -111,21 +104,94 @@ for m in range(len(folder_list)):
             ax.plot(inter,max_trace,'k')
         plt.savefig(folder+'\\plots\\single traces\\' +i+'.svg')
         v=v+1
+        thr=0
+        #pre1 activity
+        start=int(intervall[3][1])
+        zscore_pre=zscore[0:start]
+        peaks=np.where(zscore_pre>=2.)
+        peaks=peaks[0]
+        peak_diff=np.diff(peaks)
+        peak_diff=peak_diff
+        number_of_peaks_pre=len(peak_diff[peak_diff>=10])
+        print(number_of_peaks_pre)
+        if number_of_peaks_pre>thr:
+            activity_overview[0,j]=1
+        
+        
+        #pre2 activity
+        start=int(intervall[3][1])
+        zscore_pre=zscore[100:start+100]
+        peaks=np.where(zscore_pre>=2.)
+        peaks=peaks[0]
+        peak_diff=np.diff(peaks)
+        peak_diff=peak_diff
+        number_of_peaks_pre=len(peak_diff[peak_diff>=10])
+        print(number_of_peaks_pre)
+        if number_of_peaks_pre>thr:
+            activity_overview[1,j]=1
+            
+        #stim activity
+        start=int(intervall[2][2])
+        stop=int(intervall[2][3])
+        zscore_pre=zscore[start:stop]
+        peaks=np.where(zscore_pre>=2.)
+        peaks=peaks[0]
+        peak_diff=np.diff(peaks)
+        peak_diff=peak_diff
+        number_of_peaks_pre=len(peak_diff[peak_diff>=10])
+        print(number_of_peaks_pre)
+        if number_of_peaks_pre>thr:
+            activity_overview[2,j]=1
+            
+        #poststim1 activity
+        start=int(intervall[3][2])
+        zscore_pre=zscore[start:start+100]
+        peaks=np.where(zscore_pre>=2.)
+        peaks=peaks[0]
+        peak_diff=np.diff(peaks)
+        peak_diff=peak_diff
+        number_of_peaks_pre=len(peak_diff[peak_diff>=10])
+        print(number_of_peaks_pre)
+        if number_of_peaks_pre>thr:
+            activity_overview[3,j]=1
+            
+        #poststim2 activity
+        
+        start=int(intervall[3][2])
+        zscore_pre=zscore[-100:]
+        peaks=np.where(zscore_pre>=2.)
+        peaks=peaks[0]
+        peak_diff=np.diff(peaks)
+        peak_diff=peak_diff
+        number_of_peaks_pre=len(peak_diff[peak_diff>=10])
+        print(number_of_peaks_pre)
+        if number_of_peaks_pre>thr:
+            activity_overview[4,j]=1
+            
+        j=j+1
 
-active_indices=np.where(peaks_all>=3)[0]
+active_indices=np.where(peaks_all>=-1)[0]
 d=pd.DataFrame()
+
 
 #prestim1
 
+
 for i in range(len(active_indices)):
     d[header[active_indices[i]]]=a[header[active_indices[i]]]
-   
+
+
+    
+
 start=int(intervall[3][1])
 pre=d[0:start]
 names=list(d.columns)
+names=np.array(names)[activity_overview[0,:]==1]
 corr_matrx=np.zeros((len(names),len(names)))
 index_max_corr=np.zeros((len(names),len(names)))
 b=np.zeros((40,1))
+
+
 for i in range(len(names)):
     for k in range(len(names)):
         for n in range(40):
@@ -137,6 +203,7 @@ for i in range(len(names)):
         
 pre_matrix_1=np.reshape(corr_matrx,(len(corr_matrx)**2,1))
 pre_matrix_1=pre_matrix_1[pre_matrix_1<1]
+#print(index_max_corr[activity_overview_after_check[0,:]==1])
 
 plt.figure()
 plt.title('Prestim1')
@@ -145,6 +212,8 @@ plt.ylim(len(corr_matrx)+0.5,0-0.5)
 plt.xlim(0-0.5,len(corr_matrx)+0.5)
 plt.ylabel('Cell ID')
 plt.xlabel('Cell ID')
+#x=np.linspace(0,len(names),len(names))
+
 
 plt.savefig(folder+'\\plots\\prestim_1_corr.svg')
 
@@ -167,6 +236,7 @@ for i in range(len(active_indices)):
 start=int(intervall[3][1])
 pre=d[100:start+100]
 names=list(d.columns)
+names=np.array(names)[activity_overview[1,:]==1]
 corr_matrx=np.zeros((len(names),len(names)))
 index_max_corr=np.zeros((len(names),len(names)))
 b=np.zeros((40,1))
@@ -212,6 +282,7 @@ start=int(intervall[2][2])
 stop=int(intervall[2][3])
 stim=d[start:stop]
 names=list(d.columns)
+names=np.array(names)[activity_overview[2,:]==1]
 corr_matrx=np.zeros((len(names),len(names)))
 index_max_corr=np.zeros((len(names),len(names)))
 b=np.zeros((40,1))
@@ -253,6 +324,7 @@ for i in range(len(active_indices)):
 start=int(intervall[3][2])
 post=d[start:start+100]
 names=list(d.columns)
+names=np.array(names)[activity_overview[3,:]==1]
 corr_matrx=np.zeros((len(names),len(names)))
 index_max_corr=np.zeros((len(names),len(names)))
 b=np.zeros((40,1))
@@ -297,6 +369,7 @@ start=int(intervall[3][2])
 
 post=d[-100:]
 names=list(d.columns)
+names=np.array(names)[activity_overview[4,:]==1]
 corr_matrx=np.zeros((len(names),len(names)))
 index_max_corr=np.zeros((len(names),len(names)))
 b=np.zeros((40,1))
@@ -624,7 +697,11 @@ for u in range(len(plot_data)):
 
 plt.savefig(folder+'\\plots\\autooverview.svg')
 
-with open('stats.txt', 'w') as f:
-    f.write(str(stats_matrix_corr))
-    f.write(str(stats_matrix_auto))
-    f.close()
+stats_corr_excel=pd.DataFrame(stats_matrix_corr, columns=['PreStim1', 'Prestim2','Stim','Poststim1','Poststim2', 'Control'],index=['PreStim1', 'Prestim2','Stim','Poststim1','Poststim2', 'Control'])
+stats_corr_excel.to_excel(folder+'\\stats_corr.xlsx')
+
+stats_auto_excel=pd.DataFrame(stats_matrix_auto,  columns=['PreStim1', 'Prestim2','Stim','Poststim1','Poststim2', 'Control'],index=['PreStim1', 'Prestim2','Stim','Poststim1','Poststim2', 'Control'])
+stats_auto_excel.to_excel(folder+'\\stats_auto.xlsx')
+
+activity_overview_excel=pd.DataFrame(activity_overview, columns=list(d.columns), index=['PreStim1', 'Prestim2','Stim','Poststim1','Poststim2'])
+activity_overview_excel.to_excel(folder+'\\activity.xlsx')
