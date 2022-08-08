@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sun Jul 10 15:01:59 2022
-
 @author: wiesbrock
 """
 
@@ -17,11 +16,10 @@ import scipy.stats as stats
 import seaborn as sns
 import scikit_posthocs as sp
 
-#activity maske -> Werte rauswerfen
-#activity maske -> Aktivitätswerte in excel
 
 
-folder=r'C:\Users\wiesbrock\Desktop\Analysen\Neuefehler\180927_1.1\video'
+
+folder=r'C:\Users\wiesbrock\Desktop\Daten_corr_analyse\190825_5.2\video'
 search=folder+'*'
 folder_list=glob.glob(search)
 os.chdir(folder)
@@ -33,7 +31,7 @@ try:
 except:
     print('Folder already exists')
 
-control=r'C:\Users\wiesbrock\Desktop\Analysen\Neuefehler\ctrl\161122_2\video'
+control=r'C:\Users\wiesbrock\Desktop\Daten_corr_analyse\ctrl\181126_5.2\video'
 control_search=folder+'*'
 control_folder_list=glob.glob(search)
 
@@ -90,11 +88,11 @@ for m in range(len(folder_list)):
         peaks=peaks[0]
         peak_diff=np.diff(peaks)
         peak_diff=peak_diff
-        number_of_peaks=len(peak_diff[peak_diff>=10])
+        number_of_peaks=len(peak_diff[peak_diff>=15])
         peaks_all[v]=number_of_peaks+1
         plt.figure()
         plt.title(files[30:]+' '+i+ 'peaks='+str(number_of_peaks+1))
-        plt.axis('off')
+        #plt.axis('off')
         ax=plt.subplot()
         ax.plot(a[i], 'k')
         ax.plot(a[i][peaks],'r.')
@@ -105,41 +103,52 @@ for m in range(len(folder_list)):
         plt.savefig(folder+'\\plots\\single traces\\' +i+'.svg')
         v=v+1
         thr=0
+        
+        
         #pre1 activity
-        start=int(intervall[3][1])
-        zscore_pre=zscore[0:start]
+        start=int(intervall[2][1])
+        zscore_pre=zscore[0:100]
         peaks=np.where(zscore_pre>=2.)
         peaks=peaks[0]
         peak_diff=np.diff(peaks)
         peak_diff=peak_diff
         number_of_peaks_pre=len(peak_diff[peak_diff>=10])
-        print(number_of_peaks_pre)
+        if len(peaks)>0:
+            number_of_peaks_pre=number_of_peaks_pre+1
+        #print(number_of_peaks_pre)
         if number_of_peaks_pre>thr:
             activity_overview[0,j]=1
         
         
         #pre2 activity
-        start=int(intervall[3][1])
-        zscore_pre=zscore[100:start+100]
+        start=int(intervall[2][1])
+        zscore_pre=zscore[100:200]
         peaks=np.where(zscore_pre>=2.)
         peaks=peaks[0]
         peak_diff=np.diff(peaks)
         peak_diff=peak_diff
         number_of_peaks_pre=len(peak_diff[peak_diff>=10])
+        if len(peaks)>0:
+            number_of_peaks_pre=number_of_peaks_pre+1
         print(number_of_peaks_pre)
         if number_of_peaks_pre>thr:
             activity_overview[1,j]=1
             
         #stim activity
         start=int(intervall[2][2])
-        stop=int(intervall[2][3])
+        stop=int(intervall[3][2])
+        print(start)
+        print(stop)
         zscore_pre=zscore[start:stop]
         peaks=np.where(zscore_pre>=2.)
         peaks=peaks[0]
         peak_diff=np.diff(peaks)
+        check=peak_diff
         peak_diff=peak_diff
         number_of_peaks_pre=len(peak_diff[peak_diff>=10])
-        print(number_of_peaks_pre)
+        if len(peaks)>0:
+            number_of_peaks_pre=number_of_peaks_pre+1
+        #print(number_of_peaks_pre)
         if number_of_peaks_pre>thr:
             activity_overview[2,j]=1
             
@@ -151,7 +160,9 @@ for m in range(len(folder_list)):
         peak_diff=np.diff(peaks)
         peak_diff=peak_diff
         number_of_peaks_pre=len(peak_diff[peak_diff>=10])
-        print(number_of_peaks_pre)
+        if len(peaks)>0:
+            number_of_peaks_pre=number_of_peaks_pre+1
+        #print(number_of_peaks_pre)
         if number_of_peaks_pre>thr:
             activity_overview[3,j]=1
             
@@ -164,6 +175,8 @@ for m in range(len(folder_list)):
         peak_diff=np.diff(peaks)
         peak_diff=peak_diff
         number_of_peaks_pre=len(peak_diff[peak_diff>=10])
+        if len(peaks)>0:
+            number_of_peaks_pre=number_of_peaks_pre+1
         print(number_of_peaks_pre)
         if number_of_peaks_pre>thr:
             activity_overview[4,j]=1
@@ -205,27 +218,28 @@ pre_matrix_1=np.reshape(corr_matrx,(len(corr_matrx)**2,1))
 pre_matrix_1=pre_matrix_1[pre_matrix_1<1]
 #print(index_max_corr[activity_overview_after_check[0,:]==1])
 
-plt.figure()
-plt.title('Prestim1')
-sns.heatmap(corr_matrx, cmap='Greys')
-plt.ylim(len(corr_matrx)+0.5,0-0.5)
-plt.xlim(0-0.5,len(corr_matrx)+0.5)
-plt.ylabel('Cell ID')
-plt.xlabel('Cell ID')
-#x=np.linspace(0,len(names),len(names))
+if len(names)>=2:
+    plt.figure()
+    plt.title('Prestim1')
+    sns.heatmap(corr_matrx, cmap='Greys')
+    plt.ylim(len(corr_matrx)+0.5,0-0.5)
+    plt.xlim(0-0.5,len(corr_matrx)+0.5)
+    plt.ylabel('Cell ID')
+    plt.xlabel('Cell ID')
+    #x=np.linspace(0,len(names),len(names))
 
 
-plt.savefig(folder+'\\plots\\prestim_1_corr.svg')
+    plt.savefig(folder+'\\plots\\prestim_1_corr.svg')
 
-plt.figure()
-plt.title('Prestim1 Lag')
-sns.heatmap(index_max_corr, cmap='Greys')
-plt.ylim(len(corr_matrx)+0.5,0-0.5)
-plt.xlim(0-0.5,len(corr_matrx)+0.5)
-plt.ylabel('Cell ID')
-plt.xlabel('Cell ID')
+    plt.figure()
+    plt.title('Prestim1 Lag')
+    sns.heatmap(index_max_corr, cmap='Greys')
+    plt.ylim(len(corr_matrx)+0.5,0-0.5)
+    plt.xlim(0-0.5,len(corr_matrx)+0.5)
+    plt.ylabel('Cell ID')
+    plt.xlabel('Cell ID')
 
-plt.savefig(folder+'\\plots\\prestim_1_corr_lag.svg')
+    plt.savefig(folder+'\\plots\\prestim_1_corr_lag.svg')
 
 
 #prestim2
@@ -252,24 +266,27 @@ for i in range(len(names)):
 pre_matrix_2=np.reshape(corr_matrx,(len(corr_matrx)**2,1))
 pre_matrix_2=pre_matrix_2[pre_matrix_2<1]
 
-plt.figure()
-plt.title('Prestim_2')
-sns.heatmap(corr_matrx, cmap='Greys')
-plt.ylim(len(corr_matrx)+0.5,0-0.5)
-plt.xlim(0-0.5,len(corr_matrx)+0.5)
-plt.ylabel('Cell ID')
-plt.xlabel('Cell ID')
+if len(names)>=2:
+    plt.figure()
+    plt.title('Prestim_2')
+    sns.heatmap(corr_matrx, cmap='Greys')
+    plt.ylim(len(corr_matrx)+0.5,0-0.5)
+    plt.xlim(0-0.5,len(corr_matrx)+0.5)
+    plt.ylabel('Cell ID')
+    x=np.linspace(0,len(names)-1,len(names))
+    plt.yticks(x,names)
+    plt.xlabel('Cell ID')
 
-plt.savefig(folder+'\\plots\\prestim_2_corr.svg')
+    plt.savefig(folder+'\\plots\\prestim_2_corr.svg')
 
-plt.figure()
-plt.title('Prestim_2 Lag')
-sns.heatmap(index_max_corr, cmap='Greys')
-plt.ylim(len(corr_matrx)+0.5,0-0.5)
-plt.xlim(0-0.5,len(corr_matrx)+0.5)
-plt.ylabel('Cell ID')
-plt.xlabel('Cell ID')
-
+    plt.figure()
+    plt.title('Prestim_2 Lag')
+    sns.heatmap(index_max_corr, cmap='Greys')
+    plt.ylim(len(corr_matrx)+0.5,0-0.5)
+    plt.xlim(0-0.5,len(corr_matrx)+0.5)
+    plt.ylabel('Cell ID')
+    plt.xlabel('Cell ID')
+    
 plt.savefig(folder+'\\plots\\prestim_2_corr_lag.svg')
 
 
@@ -296,25 +313,26 @@ for i in range(len(names)):
 stim_matrix=np.reshape(corr_matrx,(len(corr_matrx)**2,1))
 stim_matrix=stim_matrix[stim_matrix<1]
 
-plt.figure()
-plt.title('stim')
-sns.heatmap(corr_matrx, cmap='Greys')
-plt.ylim(len(corr_matrx)+0.5,0-0.5)
-plt.xlim(0-0.5,len(corr_matrx)+0.5)
-plt.ylabel('Cell ID')
-plt.xlabel('Cell ID')
+if len(names)>=2:
+    plt.figure()
+    plt.title('stim')
+    sns.heatmap(corr_matrx, cmap='Greys')
+    plt.ylim(len(corr_matrx)+0.5,0-0.5)
+    plt.xlim(0-0.5,len(corr_matrx)+0.5)
+    plt.ylabel('Cell ID')
+    plt.xlabel('Cell ID')
 
-plt.savefig(folder+'\\plots\\stim_corr.svg')
+    plt.savefig(folder+'\\plots\\stim_corr.svg')
 
-plt.figure()
-plt.title('stim Lag')
-sns.heatmap(index_max_corr, cmap='Greys')
-plt.ylim(len(corr_matrx)+0.5,0-0.5)
-plt.xlim(0-0.5,len(corr_matrx)+0.5)
-plt.ylabel('Cell ID')
-plt.xlabel('Cell ID')
+    plt.figure()
+    plt.title('stim Lag')
+    sns.heatmap(index_max_corr, cmap='Greys')
+    plt.ylim(len(corr_matrx)+0.5,0-0.5)
+    plt.xlim(0-0.5,len(corr_matrx)+0.5)
+    plt.ylabel('Cell ID')
+    plt.xlabel('Cell ID')
 
-plt.savefig(folder+'\\plots\\stim_corr_lag.svg')
+    plt.savefig(folder+'\\plots\\stim_corr_lag.svg')
 
 #poststim1
 
@@ -340,25 +358,26 @@ for i in range(len(names)):
 post_matrix_1=np.reshape(corr_matrx,(len(corr_matrx)**2,1))
 post_matrix_1=post_matrix_1[post_matrix_1<1]
 
-plt.figure()
-plt.title('poststim1')
-sns.heatmap(corr_matrx, cmap='Greys')
-plt.ylim(len(corr_matrx)+0.5,0-0.5)
-plt.xlim(0-0.5,len(corr_matrx)+0.5)
-plt.ylabel('Cell ID')
-plt.xlabel('Cell ID')
+if len(names)>=2:
+    plt.figure()
+    plt.title('poststim1')
+    sns.heatmap(corr_matrx, cmap='Greys')
+    plt.ylim(len(corr_matrx)+0.5,0-0.5)
+    plt.xlim(0-0.5,len(corr_matrx)+0.5)
+    plt.ylabel('Cell ID')
+    plt.xlabel('Cell ID')
 
-plt.savefig(folder+'\\plots\\poststim_1_corr.svg')
+    plt.savefig(folder+'\\plots\\poststim_1_corr.svg')
 
-plt.figure()
-plt.title('poststim1 Lag')
-sns.heatmap(index_max_corr, cmap='Greys')
-plt.ylim(len(corr_matrx)+0.5,0-0.5)
-plt.xlim(0-0.5,len(corr_matrx)+0.5)
-plt.ylabel('Cell ID')
-plt.xlabel('Cell ID')
+    plt.figure()
+    plt.title('poststim1 Lag')
+    sns.heatmap(index_max_corr, cmap='Greys')
+    plt.ylim(len(corr_matrx)+0.5,0-0.5)
+    plt.xlim(0-0.5,len(corr_matrx)+0.5)
+    plt.ylabel('Cell ID')
+    plt.xlabel('Cell ID')
 
-plt.savefig(folder+'\\plots\\posttim_1_corr_lag.svg')
+    plt.savefig(folder+'\\plots\\posttim_1_corr_lag.svg')
 
 #poststim2
 
@@ -385,25 +404,26 @@ for i in range(len(names)):
 post_matrix_2=np.reshape(corr_matrx,(len(corr_matrx)**2,1))
 post_matrix_2=post_matrix_2[post_matrix_2<1]
 
-plt.figure()
-plt.title('poststim2')
-sns.heatmap(corr_matrx, cmap='Greys')
-plt.ylim(len(corr_matrx)+0.5,0-0.5)
-plt.xlim(0-0.5,len(corr_matrx)+0.5)
-plt.ylabel('Cell ID')
-plt.xlabel('Cell ID')
+if len(names)>=2:
+    plt.figure()
+    plt.title('poststim2')
+    sns.heatmap(corr_matrx, cmap='Greys')
+    plt.ylim(len(corr_matrx)+0.5,0-0.5)
+    plt.xlim(0-0.5,len(corr_matrx)+0.5)
+    plt.ylabel('Cell ID')
+    plt.xlabel('Cell ID')
 
-plt.savefig(folder+'\\plots\\poststim_2_corr.svg')
+    plt.savefig(folder+'\\plots\\poststim_2_corr.svg')
 
-plt.figure()
-plt.title('poststim2 Lag')
-sns.heatmap(index_max_corr, cmap='Greys')
-plt.ylim(len(corr_matrx)+0.5,0-0.5)
-plt.xlim(0-0.5,len(corr_matrx)+0.5)
-plt.ylabel('Cell ID')
-plt.xlabel('Cell ID')
+    plt.figure()
+    plt.title('poststim2 Lag')
+    sns.heatmap(index_max_corr, cmap='Greys')
+    plt.ylim(len(corr_matrx)+0.5,0-0.5)
+    plt.xlim(0-0.5,len(corr_matrx)+0.5)
+    plt.ylabel('Cell ID')
+    plt.xlabel('Cell ID')
 
-plt.savefig(folder+'\\plots\\posttim_2_corr_lag.svg')
+    plt.savefig(folder+'\\plots\\posttim_2_corr_lag.svg')
 
 
 #control
@@ -679,8 +699,8 @@ sns.distplot(plot_data[2],ax=ax_hist,hist=False,vertical=True)
 sns.distplot(plot_data[3],ax=ax_hist,hist=False,vertical=True)
 sns.distplot(plot_data[4],ax=ax_hist,hist=False,vertical=True)
 
-if intervall[3][2]+200<intervall[3][3]:
-    sns.distplot(plot_data[5],ax=ax_hist,hist=False,vertical=True)
+#if intervall[3][2]+200<intervall[3][3]:
+#    sns.distplot(plot_data[5],ax=ax_hist,hist=False,vertical=True)
 ax_swarm.tick_params(right=False,labelright=True)
 ax_swarm.tick_params(left=False,labelleft=False)
 sns.despine(ax=ax_swarm, top=True,left=True,right=True)
