@@ -645,7 +645,7 @@ sns.set_palette("rocket_r")
 f, (ax_swarm, ax_hist) = plt.subplots(1,2, sharey=True, gridspec_kw={"width_ratios": (.85, .15)})
 
 plot_data=pre_matrix_1[pre_matrix_1<0.99],pre_matrix_2[pre_matrix_2<0.99],stim_matrix[stim_matrix<0.99],post_matrix_1[post_matrix_1<0.99],post_matrix_2[post_matrix_2<0.99],control_matrix[control_matrix<0.99]
-plt.figure()
+plt.figure(98)
 sns.violinplot(data=plot_data,ax=ax_swarm).set_title('Crosscorrelation')
 #plt.sca(f[ax_swarm])
 #plt.xticks((0,1,2,3,4,5), ['Pre1','Pre2','Stim','Post1','Post2', 'Ctrl'])
@@ -687,7 +687,7 @@ f, (ax_swarm, ax_hist) = plt.subplots(1,2, sharey=True, gridspec_kw={"width_rati
 
 plot_data=pre_matrix_1[pre_matrix_1<0.99],pre_matrix_2[pre_matrix_2<0.99],stim_matrix[stim_matrix<0.99],post_matrix_1[post_matrix_1<0.99],post_matrix_2[post_matrix_2<0.99],control_matrix[control_matrix<0.99]
 
-plt.figure()
+plt.figure(99)
 sns.violinplot(data=plot_data,ax=ax_swarm).set_title('Autocorrelation')
 #plt.sca(f[ax_swarm])
 #plt.xticks((0,1,2,3,4,5), ['Pre1','Pre2','Stim','Post1','Post2', 'Ctrl'])
