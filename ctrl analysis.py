@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu Oct  7 14:49:10 2021
+Created on Thu Oct 27 12:24:34 2022
 
 @author: wiesbrock
 """
@@ -24,7 +24,6 @@ def crosscorr(datax, datay, lag=0):
     ----------
     lag : int, default 0
     datax, datay : pandas.Series objects of equal length
-
     Returns
     ----------
     crosscorr : float
@@ -38,7 +37,7 @@ folder_list=glob.glob(folder_list)
 
 os.chdir(folder)
 try:
-    os.mkdir('plots')
+    os.mkdir(folder+'\plots')
 except:
     print('Folder already exists')
     
@@ -288,14 +287,23 @@ for i in folder_list:
     
 import seaborn as sns
 sns.set_palette("rocket_r")
+win1=np.reshape(win1,(len(win1)**2,1))
+win2=np.reshape(win2,(len(win2)**2,1))
+win3=np.reshape(win3,(len(win3)**2,1))
+win4=np.reshape(win4,(len(win4)**2,1))
+win5=np.reshape(win5,(len(win5)**2,1))
 plt.figure()
-plot_data=win1,win2,win3,win4,win5
+plot_data=win1[win1<0.99],win2[win2<0.99],win3[win3<0.99],win4[win4<0.99],win5[win5<0.99]
 sns.violinplot(data=plot_data).set_title('Crosscorrelation')
 #plt.sca(f[ax_swarm])
 #plt.xticks((0,1,2,3,4,5), ['Pre1','Pre2','Stim','Post1','Post2', 'Ctrl'])
 plt.xticks(range(5),['Win1','Win2','Win3','Win4','Win5'])
 plt.savefig(folder+'\\plots\\Crosscorrelation Overview.svg')
 
-                
-                
+print(stats.kruskal(win1,win2,win3,win4,win5))
 
+
+stats_matrix_corr=np.zeros((len(plot_data),len(plot_data)))
+for u in range(len(plot_data)):
+    for s in range(len(plot_data)):
+        stats_matrix_corr[u][s]=stats.ttest_ind(plot_data[u],plot_data[s])[1]
