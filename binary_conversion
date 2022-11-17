@@ -1,0 +1,132 @@
+# -*- coding: utf-8 -*-
+"""
+
+@author: wiesbrock
+"""
+
+from IPython import get_ipython
+#get_ipython().magic('reset -sf')
+
+import numpy as np
+import glob
+import matplotlib.pyplot as plt
+import pandas as pd
+import os
+import scipy.stats as stats
+import seaborn as sns
+import scikit_posthocs as sp
+
+
+
+
+folder=r'C:\Users\wiesbrock\Desktop\Desktop\Analysen\181129_7.2'
+search=folder+'*'
+folder_list=glob.glob(search)
+os.chdir(folder)
+try:
+    os.mkdir('plots')
+    os.mkdir('plots\\single traces')
+    os.mkdir('plots\\Control_single traces')
+    os.mkdir('plots\\auto')
+except:
+    print('Folder already exists')
+
+def crosscorr(datax, datay, lag=0):
+    """ Lag-N cross correlation. 
+    Parameters
+    ----------
+    lag : int, default 0
+    datax, datay : pandas.Series objects of equal length
+    Returns
+    ----------
+    crosscorr : float
+    """
+    return datax.corr(datay.shift(lag))
+
+
+for m in range(len(folder_list)):
+
+    #files=str(folder_list[m])+'\\results\\manual\\time_series.xlsx'
+    #meta=str(folder_list[m])+'\\Intervals.txt'
+    
+    files=str(folder+'\\results\\manual\\time_series.xlsx')
+    meta=str(folder+'\\Intervals.txt')
+
+
+
+    df =pd.read_excel(files,sheet_name=None)
+
+    intervall = pd.read_csv(meta, header = None)
+    if np.shape(intervall)==(4,4):
+        if int(intervall[2][2])==1:
+            intervall[2][2]=int(intervall[2][2])+int(intervall[3][1])
+            intervall[3][2]=int(intervall[3][2])+int(intervall[3][1])
+            intervall[2][3]=int(intervall[2][3])+int(intervall[3][2])
+            intervall[3][3]=int(intervall[3][3])+int(intervall[3][2])
+    a=df['detrended']
+   
+    
+    
+    
+    header=list(a.columns.values)
+    v=0
+    peaks_all=np.zeros((len(header),1))
+    j=0
+    
+    
+    d=np.empty((len(header),len(a)))
+    
+    
+    
+    for i in header:
+        
+        zscore=stats.zscore(a[i])
+        peaks=np.where(zscore>=2.)
+        peaks=peaks[0]
+        peak_diff=np.diff(peaks)
+        peak_diff=peak_diff
+        number_of_peaks=len(peak_diff[peak_diff>=15])
+        peaks_all[v]=number_of_peaks+1
+        plt.figure()
+        plt.title(files[30:]+' '+i+ 'peaks='+str(number_of_peaks+1))
+        #plt.axis('off')
+        ax=plt.subplot(211)
+        ax.set_title(i)
+        ax.plot(a[i], 'k')
+        ax.plot(a[i][peaks],'r.')
+        binary=np.zeros((len(zscore),1))
+        binary[peaks]=1
+        binary=np.reshape(binary,(len(a),))
+        d[j]=binary
+        j=j+1
+        
+        
+        ax=plt.subplot(212)
+        
+        ax.plot(binary)
+        #plt.savefig(folder+'\\plots\\single traces\\' +i+'.svg')
+        v=v+1
+        thr=0
+        
+    names=list(a.columns)
+    corr_matrx=np.zeros((len(names),len(names)))
+    index_max_corr=np.zeros((len(names),len(names)))
+    b=np.zeros((40,1))
+    for i in range(len(names)):
+        for k in range(len(names)):
+            trace_1=(d[i])
+            trace_2=(d[k])
+            trace_1=pd.DataFrame(trace_1)
+            trace_2=pd.DataFrame(trace_2)
+            trace_1=trace_1.squeeze()
+            trace_2=trace_2.squeeze()
+            for n in range(40):
+                
+                b[n]=crosscorr(trace_1,trace_2, lag=n)
+                corr_matrx[i,k]=np.max(b)
+                index_max_corr[i,k]=np.where(b==np.max(b))[0]
+ 
+plt.figure()               
+sns.heatmap(corr_matrx, cmap='Greys')
+        
+    
