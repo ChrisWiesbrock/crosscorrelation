@@ -104,14 +104,14 @@ for m in range(len(folder_list)):
         ax=plt.subplot(212)
         
         ax.plot(binary)
-        #plt.savefig(folder+'\\plots\\single traces\\' +i+'.svg')
+        plt.savefig(folder+'\\plots\\single traces\\' +i+'.svg')
         v=v+1
         thr=0
         
     names=list(a.columns)
     corr_matrx=np.zeros((len(names),len(names)))
     index_max_corr=np.zeros((len(names),len(names)))
-    b=np.zeros((40,1))
+    b=np.zeros((80,1))
     for i in range(len(names)):
         for k in range(len(names)):
             trace_1=(d[i])
@@ -120,13 +120,15 @@ for m in range(len(folder_list)):
             trace_2=pd.DataFrame(trace_2)
             trace_1=trace_1.squeeze()
             trace_2=trace_2.squeeze()
-            for n in range(40):
-                
-                b[n]=crosscorr(trace_1,trace_2, lag=n)
-                corr_matrx[i,k]=np.max(b)
-                index_max_corr[i,k]=np.where(b==np.max(b))[0]
+            for n in range(80):
+                p=n-40
+                b[n]=crosscorr(trace_1,trace_2, lag=p)
+                corr_matrx[i,k]=np.nanmax(b)
+                index_max_corr[i,k]=np.where(b==np.nanmax(b))[0][0]
+    index_max_corr=np.abs(index_max_corr-40)
  
 plt.figure()               
 sns.heatmap(corr_matrx, cmap='Greys')
+plt.savefig(folder+'\\plots\\heatmap.svg')
         
     
