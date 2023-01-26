@@ -1,0 +1,125 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Jan 26 14:58:58 2023
+
+@author: wiesbrock
+"""
+
+
+
+from IPython import get_ipython
+#get_ipython().magic('reset -sf')
+
+import numpy as np
+import glob
+import matplotlib.pyplot as plt
+import pandas as pd
+import os
+import scipy.stats as stats
+import seaborn as sns
+
+
+
+
+
+folder=r'C:\Users\wiesbrock\Desktop\time_series_AmhDHT_adult\*.xlsx'
+
+folder_list=glob.glob(folder)
+
+    
+
+
+def crosscorr(datax, datay, lag=0):
+    """ Lag-N cross correlation. 
+    Parameters
+    ----------
+    lag : int, default 0
+    datax, datay : pandas.Series objects of equal length
+    Returns
+    ----------
+    crosscorr : float
+    """
+    return datax.corr(datay.shift(lag))
+
+all_cross_corr=list()
+
+
+for m in range(len(folder_list)):
+
+    #files=str(folder_list[m])+'\\results\\manual\\time_series.xlsx'
+    #meta=str(folder_list[m])+'\\Intervals.txt'
+    
+    files=str(folder_list[m])
+
+
+
+
+    df=pd.read_excel(files,sheet_name=None,engine='openpyxl')
+
+    
+    a=df['detrended']
+   
+    
+    
+    
+    header=list(a.columns.values)
+    v=0
+    peaks_all=np.zeros((len(header),1))
+    j=0
+    
+    
+    d=np.empty((len(header),len(a)))
+    
+    
+    
+    for i in header:
+        
+        zscore=stats.zscore(a[i])
+        peaks=np.where(zscore>=2.)
+        peaks=peaks[0]
+        peak_diff=np.diff(peaks)
+        peak_diff=peak_diff
+        number_of_peaks=len(peak_diff[peak_diff>=15])
+        peaks_all[v]=number_of_peaks+1
+        #plt.axis('off')
+        binary=np.zeros((len(zscore),1))
+        binary[peaks]=1
+        binary=np.reshape(binary,(len(a),))
+        d[j]=binary
+        j=j+1
+        
+        v=v+1
+        thr=0
+        
+    names=list(a.columns)
+    corr_matrx=np.zeros((len(names),len(names)))
+    index_max_corr=np.zeros((len(names),len(names)))
+    b=np.zeros((80,1))
+    for i in range(len(names)):
+        for k in range(len(names)):
+            trace_1=(d[i])
+            trace_2=(d[k])
+            trace_1=pd.DataFrame(trace_1)
+            trace_2=pd.DataFrame(trace_2)
+            trace_1=trace_1.squeeze()
+            trace_2=trace_2.squeeze()
+            for n in range(80):
+                p=n-40
+                b[n]=crosscorr(trace_1,trace_2, lag=p)
+                corr_matrx[i,k]=np.nanmax(b)
+                index_max_corr[i,k]=np.where(b==np.nanmax(b))[0][0]
+    index_max_corr=np.abs(index_max_corr-40)
+    all_cross_corr.append(np.concatenate(corr_matrx,axis=0))
+
+all_cross_corr=np.concatenate(all_cross_corr)
+all_cross_corr=all_cross_corr[all_cross_corr<.99]
+
+
+
+
+hist,edges=np.histogram(all_cross_corr, bins=50)
+
+plt.plot(edges[:-1],hist/2)
+
+plt.ylabel('Count')
+plt.xlabel('Cross Correlation')
