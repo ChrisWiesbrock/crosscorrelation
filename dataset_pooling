@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
 """
+Created on Wed Feb  1 09:51:50 2023
+
+@author: wiesbrock
+"""
+# -*- coding: utf-8 -*-
+"""
 Created on Thu Jan 26 14:58:58 2023
 
 @author: wiesbrock
@@ -42,6 +48,7 @@ def crosscorr(datax, datay, lag=0):
     return datax.corr(datay.shift(lag))
 
 all_cross_corr=list()
+all_index=list()
 
 
 for m in range(len(folder_list)):
@@ -110,16 +117,38 @@ for m in range(len(folder_list)):
                 index_max_corr[i,k]=np.where(b==np.nanmax(b))[0][0]
     index_max_corr=np.abs(index_max_corr-40)
     all_cross_corr.append(np.concatenate(corr_matrx,axis=0))
+    all_index.append(np.concatenate(index_max_corr,axis=0))
 
 all_cross_corr=np.concatenate(all_cross_corr)
+all_index=np.concatenate(all_index)
+all_index=all_index[all_cross_corr<.99]
 all_cross_corr=all_cross_corr[all_cross_corr<.99]
+r_square=all_cross_corr**2
 
 
 
 
-hist,edges=np.histogram(all_cross_corr, bins=50)
+plt.figure()
+hist,edges=np.histogram(r_square, bins=10)
 
-plt.plot(edges[:-1],hist/2)
+plt.plot(edges[:-1],hist/2, 'k-')
 
 plt.ylabel('Count')
 plt.xlabel('Cross Correlation')
+sns.despine()
+
+
+plt.figure()
+hist,edges=np.histogram(all_index, bins=50)
+
+plt.plot(edges[:-1],hist/2, 'k-')
+
+plt.ylabel('Count')
+plt.xlabel('Lag')
+sns.despine()
+
+plt.figure()
+plt.scatter(all_index,all_cross_corr, marker='.')
+plt.xlabel('Lag')
+plt.ylabel('r_square')
+sns.despine()
