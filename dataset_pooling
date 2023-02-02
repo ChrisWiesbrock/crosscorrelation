@@ -27,8 +27,11 @@ import seaborn as sns
 
 
 
+path=r'C:\Users\wiesbrock\Desktop\time_series_AmhDHT_adult\\'
+folder=path+'*.xlsx'
 
-folder=r'C:\Users\wiesbrock\Desktop\time_series_AmhDHT_adult\*.xlsx'
+os.chdir(path)
+
 
 folder_list=glob.glob(folder)
 
@@ -128,7 +131,7 @@ r_square=all_cross_corr**2
 
 
 
-plt.figure()
+plt.figure(dpi=300)
 hist,edges=np.histogram(r_square, bins=10)
 
 plt.plot(edges[:-1],hist/2, 'k-')
@@ -137,8 +140,10 @@ plt.ylabel('Count')
 plt.xlabel('r_square')
 sns.despine()
 
+plt.savefig('R_square histogram.svg')
 
-plt.figure()
+
+plt.figure(dpi=300)
 hist,edges=np.histogram(all_index, bins=10)
 
 plt.plot(edges[:-1],hist/2, 'k-')
@@ -146,6 +151,8 @@ plt.plot(edges[:-1],hist/2, 'k-')
 plt.ylabel('Count')
 plt.xlabel('Lag')
 sns.despine()
+
+plt.savefig('Lag histogram.svg')
 
 
 
@@ -160,11 +167,13 @@ kmeans = KMeans(n_clusters=3)
 kmeans.fit(X)
 y_kmeans = kmeans.predict(X)
 
-plt.figure()
+plt.figure(dpi=300)
 plt.scatter(all_index[all_cross_corr>0.5],r_square[all_cross_corr>0.5], marker='o',c=y_kmeans)
 plt.xlabel('Lag')
 plt.ylabel('r_square')
 sns.despine()
+
+plt.savefig('cluster_scatter.svg')
 
 percent=len(r_square[r_square>0.5])
 percent=percent/len(r_square)
@@ -185,9 +194,11 @@ for k in K:
     kmeanModel.fit(X)
     distortions.append(kmeanModel.inertia_)
 
-plt.figure(figsize=(16,8))
+plt.figure(figsize=(16,8),dpi=300)
 plt.plot(K, distortions, 'bx-')
 plt.xlabel('k')
 plt.ylabel('Distortion')
 plt.title('The Elbow Method showing the optimal k')
+plt.savefig('elbow.svg')
 plt.show()
+
