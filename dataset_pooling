@@ -134,12 +134,12 @@ hist,edges=np.histogram(r_square, bins=10)
 plt.plot(edges[:-1],hist/2, 'k-')
 
 plt.ylabel('Count')
-plt.xlabel('Cross Correlation')
+plt.xlabel('r_square')
 sns.despine()
 
 
 plt.figure()
-hist,edges=np.histogram(all_index, bins=50)
+hist,edges=np.histogram(all_index, bins=10)
 
 plt.plot(edges[:-1],hist/2, 'k-')
 
@@ -151,17 +151,17 @@ sns.despine()
 
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
-X=list(zip(r_square[r_square>0.5],all_index[r_square>0.5]))
+X=list(zip(r_square[all_cross_corr>0.5],all_index[all_cross_corr>0.5]))
 
 X=pd.DataFrame(data=X)
 scaler=StandardScaler()
 X=scaler.fit_transform(X)
-kmeans = KMeans(n_clusters=4)
+kmeans = KMeans(n_clusters=3)
 kmeans.fit(X)
 y_kmeans = kmeans.predict(X)
 
 plt.figure()
-plt.scatter(all_index[r_square>0.5],r_square[r_square>0.5], marker='o',c=y_kmeans)
+plt.scatter(all_index[all_cross_corr>0.5],r_square[all_cross_corr>0.5], marker='o',c=y_kmeans)
 plt.xlabel('Lag')
 plt.ylabel('r_square')
 sns.despine()
@@ -170,4 +170,24 @@ percent=len(r_square[r_square>0.5])
 percent=percent/len(r_square)
 percent=percent*100
 
-print('Amount of cell pairs with a r_squared higher then 0.5 '+str(percent)+'%')
+print('Amount of cell pairs with a r_squared higher then 0.5 '+str(percent)+' %')
+
+percent=len(all_cross_corr[all_cross_corr>0.5])
+percent=percent/len(all_cross_corr)
+percent=percent*100
+
+print('Amount of cell pairs with a cross corr higher then 0.5 '+str(percent)+' %')
+
+distortions = []
+K = range(1,10)
+for k in K:
+    kmeanModel = KMeans(n_clusters=k)
+    kmeanModel.fit(X)
+    distortions.append(kmeanModel.inertia_)
+
+plt.figure(figsize=(16,8))
+plt.plot(K, distortions, 'bx-')
+plt.xlabel('k')
+plt.ylabel('Distortion')
+plt.title('The Elbow Method showing the optimal k')
+plt.show()
