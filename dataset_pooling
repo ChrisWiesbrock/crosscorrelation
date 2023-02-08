@@ -32,6 +32,11 @@ folder=path+'*.xlsx'
 
 os.chdir(path)
 
+try:
+    os.mkdir(path+'/check')
+except:
+    print('Folder already exists')
+
 
 folder_list=glob.glob(folder)
 
@@ -118,6 +123,16 @@ for m in range(len(folder_list)):
                 b[n]=crosscorr(trace_1,trace_2, lag=p)
                 corr_matrx[i,k]=np.nanmax(b)
                 index_max_corr[i,k]=np.where(b==np.nanmax(b))[0][0]
+            if corr_matrx[i,k]>=0.5:
+                if np.sum(trace_1-trace_2)!=0:
+                    plt.figure()
+                    plt.subplot(211)
+                    plt.plot(trace_1)
+                    plt.title(str(folder_list[m])+' '+str(names[i])+' '+str(names[k]))
+                    plt.subplot(212)
+                    plt.plot(trace_2)
+                    plt.savefig(path+'/check/'+'Unit '+str(i)+' and Unit '+str(k)+'.svg')
+
     index_max_corr=np.abs(index_max_corr-40)
     all_cross_corr.append(np.concatenate(corr_matrx,axis=0))
     all_index.append(np.concatenate(index_max_corr,axis=0))
@@ -201,4 +216,3 @@ plt.ylabel('Distortion')
 plt.title('The Elbow Method showing the optimal k')
 plt.savefig('elbow.svg')
 plt.show()
-
