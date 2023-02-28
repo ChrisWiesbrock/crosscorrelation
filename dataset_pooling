@@ -25,7 +25,7 @@ import scipy.stats as stats
 import seaborn as sns
 
 
-maximum_lag=100
+maximum_lag=40
 
 path=r'C:\Users\wiesbrock\Desktop\time_series_AmhDHT_adult\\'
 folder=path+'*.xlsx'
@@ -84,7 +84,7 @@ for m in range(len(folder_list)):
     
     
     d=np.empty((len(header),len(a)))
-    
+    n_t=np.empty((len(header),len(a)))
     
     
     for i in header:
@@ -98,9 +98,12 @@ for m in range(len(folder_list)):
         peaks_all[v]=number_of_peaks+1
         #plt.axis('off')
         binary=np.zeros((len(zscore),1))
+        normal_trace=np.zeros((len(zscore),1))
         binary[peaks]=1
         binary=np.reshape(binary,(len(a),))
+        normal_trace=np.reshape(normal_trace,(len(a),))
         d[j]=binary
+        n_t[j]=zscore
         j=j+1
         
         v=v+1
@@ -109,7 +112,7 @@ for m in range(len(folder_list)):
     names=list(a.columns)
     corr_matrx=np.zeros((len(names),len(names)))
     index_max_corr=np.zeros((len(names),len(names)))
-    b=np.zeros((maximum_lag,1))
+    b=np.zeros((maximum_lag*2,1))
     for i in range(len(names)):
         for k in range(len(names)):
             trace_1=(d[i])
@@ -118,6 +121,12 @@ for m in range(len(folder_list)):
             trace_2=pd.DataFrame(trace_2)
             trace_1=trace_1.squeeze()
             trace_2=trace_2.squeeze()
+            n_trace_1=(n_t[i])
+            n_trace_2=(n_t[k])
+            n_trace_1=pd.DataFrame(n_trace_1)
+            n_trace_2=pd.DataFrame(n_trace_2)
+            n_trace_1=n_trace_1.squeeze()
+            n_trace_2=n_trace_2.squeeze()
             for n in range(maximum_lag*2):
                 p=n-maximum_lag
                 b[n]=crosscorr(trace_1,trace_2, lag=p)
@@ -126,14 +135,21 @@ for m in range(len(folder_list)):
             if corr_matrx[i,k]>=0.5:
                 if np.sum(trace_1-trace_2)!=0:
                     plt.figure()
-                    plt.subplot(211)
+                    plt.subplot(411)
                     plt.plot(trace_1)
+                    plt.xticks([])
                     plt.title(str(folder_list[m])+' '+str(names[i])+' '+str(names[k]))
-                    plt.subplot(212)
+                    plt.subplot(413)
+                    plt.xticks([])
                     plt.plot(trace_2)
+                    plt.subplot(412)
+                    plt.xticks([])
+                    plt.plot(n_trace_1)
+                    plt.subplot(414)
+                    plt.plot(n_trace_2)
                     #plt.savefig(path+'/check/'+'Unit '+str(i)+' and Unit '+str(k)+'.svg')
 
-    index_max_corr=np.abs(index_max_corr-200)
+    index_max_corr=np.abs(index_max_corr-maximum_lag)
     all_cross_corr.append(np.concatenate(corr_matrx,axis=0))
     all_index.append(np.concatenate(index_max_corr,axis=0))
 
