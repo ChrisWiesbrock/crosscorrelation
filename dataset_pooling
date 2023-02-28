@@ -25,7 +25,7 @@ import scipy.stats as stats
 import seaborn as sns
 
 
-
+maximum_lag=100
 
 path=r'C:\Users\wiesbrock\Desktop\time_series_AmhDHT_adult\\'
 folder=path+'*.xlsx'
@@ -109,7 +109,7 @@ for m in range(len(folder_list)):
     names=list(a.columns)
     corr_matrx=np.zeros((len(names),len(names)))
     index_max_corr=np.zeros((len(names),len(names)))
-    b=np.zeros((80,1))
+    b=np.zeros((maximum_lag,1))
     for i in range(len(names)):
         for k in range(len(names)):
             trace_1=(d[i])
@@ -118,8 +118,8 @@ for m in range(len(folder_list)):
             trace_2=pd.DataFrame(trace_2)
             trace_1=trace_1.squeeze()
             trace_2=trace_2.squeeze()
-            for n in range(80):
-                p=n-40
+            for n in range(maximum_lag*2):
+                p=n-maximum_lag
                 b[n]=crosscorr(trace_1,trace_2, lag=p)
                 corr_matrx[i,k]=np.nanmax(b)
                 index_max_corr[i,k]=np.where(b==np.nanmax(b))[0][0]
@@ -131,9 +131,9 @@ for m in range(len(folder_list)):
                     plt.title(str(folder_list[m])+' '+str(names[i])+' '+str(names[k]))
                     plt.subplot(212)
                     plt.plot(trace_2)
-                    plt.savefig(path+'/check/'+'Unit '+str(i)+' and Unit '+str(k)+'.svg')
+                    #plt.savefig(path+'/check/'+'Unit '+str(i)+' and Unit '+str(k)+'.svg')
 
-    index_max_corr=np.abs(index_max_corr-40)
+    index_max_corr=np.abs(index_max_corr-200)
     all_cross_corr.append(np.concatenate(corr_matrx,axis=0))
     all_index.append(np.concatenate(index_max_corr,axis=0))
 
@@ -147,9 +147,7 @@ r_square=all_cross_corr**2
 
 
 plt.figure(dpi=300)
-hist,edges=np.histogram(r_square, bins=10)
-
-plt.plot(edges[:-1],hist/2, 'k-')
+sns.histplot(r_square)
 
 plt.ylabel('Count')
 plt.xlabel('r_square')
@@ -159,9 +157,7 @@ plt.savefig('R_square histogram.svg')
 
 
 plt.figure(dpi=300)
-hist,edges=np.histogram(all_index, bins=10)
-
-plt.plot(edges[:-1],hist/2, 'k-')
+sns.histplot(all_index)
 
 plt.ylabel('Count')
 plt.xlabel('Lag')
@@ -170,7 +166,7 @@ sns.despine()
 plt.savefig('Lag histogram.svg')
 
 
-
+'''
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 X=list(zip(r_square[all_cross_corr>0.5],all_index[all_cross_corr>0.5]))
@@ -216,3 +212,4 @@ plt.ylabel('Distortion')
 plt.title('The Elbow Method showing the optimal k')
 plt.savefig('elbow.svg')
 plt.show()
+'''
