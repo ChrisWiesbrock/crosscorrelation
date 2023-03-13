@@ -15,6 +15,8 @@ Created on Thu Jan 26 14:58:58 2023
 
 from IPython import get_ipython
 #get_ipython().magic('reset -sf')
+# Turn interactive plotting off
+
 
 import numpy as np
 import glob
@@ -23,9 +25,10 @@ import pandas as pd
 import os
 import scipy.stats as stats
 import seaborn as sns
+from scipy.signal import argrelextrema
 
-
-maximum_lag=40
+plt.ioff()
+maximum_lag=60
 
 path=r'C:\Users\wiesbrock\Desktop\time_series_AmhDHT_adult\\'
 folder=path+'*.xlsx'
@@ -39,6 +42,28 @@ except:
 
 
 folder_list=glob.glob(folder)
+fig_counter=0
+
+
+def zero_sum_cols(arr):
+    """
+    Gibt eine Liste zurück, die den Index der Spalte angibt, welche Spalten eines Arrays eine Summe von 0 ergeben.
+    
+    Args:
+    arr (list): Eine zweidimensionale Liste, die das Array darstellt.
+    
+    Returns:
+    Eine Liste mit den Indizes der Spalten, die eine Summe von 0 ergeben.
+    """
+    num_cols = len(arr[0])
+    result = []
+    
+    for j in range(num_cols):
+        col_sum = sum(row[j] for row in arr)
+        if col_sum == 0:
+            result.append(j)
+    
+    return result
 
     
 
@@ -83,9 +108,9 @@ for m in range(len(folder_list)):
     j=0
     
     
-    d=np.empty((len(header),len(a)))
-    n_t=np.empty((len(header),len(a)))
-    
+    d=np.zeros((len(header),len(a)))
+    n_t=np.zeros((len(header),len(a)))
+    header_active=np.zeros((len(header),))
     
     for i in header:
         
@@ -101,6 +126,8 @@ for m in range(len(folder_list)):
         normal_trace=np.zeros((len(zscore),1))
         binary[peaks]=1
         binary=np.reshape(binary,(len(a),))
+        if len(np.where(np.diff(binary)==1)[0])>2:
+            header_active[j]=1
         normal_trace=np.reshape(normal_trace,(len(a),))
         d[j]=binary
         n_t[j]=zscore
@@ -108,50 +135,113 @@ for m in range(len(folder_list)):
         
         v=v+1
         thr=0
-        
-    names=list(a.columns)
-    corr_matrx=np.zeros((len(names),len(names)))
-    index_max_corr=np.zeros((len(names),len(names)))
+    
+    d=np.array(d)
+    d=np.transpose(d)
+    n_t=np.array(n_t) 
+    n_t=np.transpose(n_t) 
+    
+    high_activity_binary = np.zeros((d.shape[0],d.shape[1]))
+    low_activity_binary = np.zeros((d.shape[0],d.shape[1]))
+    
+    high_activity_trace = np.zeros((d.shape[0],d.shape[1]))
+    low_activity_trace = np.zeros((d.shape[0],d.shape[1]))
+    
+    
+       
+    for col in range(d.shape[1]):
+        if header_active[col]==1:
+            high_activity_binary[:,col] = d[:,col]
+            high_activity_trace[:,col]=n_t[:,col]
+        else:
+            low_activity_binary[:,col] = d[:,col]
+            low_activity_trace[:,col]=n_t[:,col]
+            
+    result_high_binary=zero_sum_cols(high_activity_binary)
+    result_low_binary=zero_sum_cols(low_activity_binary)
+         
+    high_activity_binary=np.delete(high_activity_binary,result_high_binary,1)   
+    low_activity_binary=np.delete(low_activity_binary,result_low_binary,1) 
+    
+    result_high_trace=zero_sum_cols(high_activity_trace)
+    result_low_trace=zero_sum_cols(low_activity_trace)
+         
+    high_activity_trace=np.delete(high_activity_trace,result_high_trace,1)   
+    low_activity_trace=np.delete(low_activity_trace,result_low_trace,1) 
+    
+    names=np.array(a.columns)
+    header_active=header_active.astype(int)
+    
+    high_activity_trace=pd.DataFrame(high_activity_trace)
+    high_activity_trace.columns=names[header_active==1]
+    high_activity_binary=pd.DataFrame(high_activity_binary)
+    high_activity_binary.columns=names[header_active==1]
+    
+    low_activity_trace=pd.DataFrame(low_activity_trace)
+    low_activity_trace.columns=names[header_active==0]
+    low_activity_binary=pd.DataFrame(low_activity_binary)
+    low_activity_binary.columns=names[header_active==0]
+    
+    
+    
+    names_high=list(high_activity_trace.columns)
+    names_low=list(low_activity_trace.columns)
+    
+    high_activity_trace=np.array(high_activity_trace)
+    high_activity_binary=np.array(high_activity_binary)
+    
+    ###high activity###
+    corr_matrx=np.zeros((len(names_high),len(names_high)))
+    #print(len(names))
+    index_max_corr=np.zeros((len(names_high),len(names_high)))
     b=np.zeros((maximum_lag*2,1))
-    for i in range(len(names)):
-        for k in range(len(names)):
-            trace_1=(d[i])
-            trace_2=(d[k])
-            trace_1=pd.DataFrame(trace_1)
-            trace_2=pd.DataFrame(trace_2)
-            trace_1=trace_1.squeeze()
-            trace_2=trace_2.squeeze()
-            n_trace_1=(n_t[i])
-            n_trace_2=(n_t[k])
-            n_trace_1=pd.DataFrame(n_trace_1)
-            n_trace_2=pd.DataFrame(n_trace_2)
-            n_trace_1=n_trace_1.squeeze()
-            n_trace_2=n_trace_2.squeeze()
-            for n in range(maximum_lag*2):
-                p=n-maximum_lag
-                b[n]=crosscorr(trace_1,trace_2, lag=p)
-                corr_matrx[i,k]=np.nanmax(b)
-                index_max_corr[i,k]=np.where(b==np.nanmax(b))[0][0]
-            if corr_matrx[i,k]>=0.5:
-                if np.sum(trace_1-trace_2)!=0:
-                    plt.figure()
-                    plt.subplot(411)
-                    plt.plot(trace_1)
-                    plt.xticks([])
-                    plt.title(str(folder_list[m])+' '+str(names[i])+' '+str(names[k]))
-                    plt.subplot(413)
-                    plt.xticks([])
-                    plt.plot(trace_2)
-                    plt.subplot(412)
-                    plt.xticks([])
-                    plt.plot(n_trace_1)
-                    plt.subplot(414)
-                    plt.plot(n_trace_2)
-                    #plt.savefig(path+'/check/'+'Unit '+str(i)+' and Unit '+str(k)+'.svg')
+    if len(names_high)>1:
+        for i in range(len(names_high)):
+            for k in range(len(names_high)):
+                trace_1=(high_activity_binary[:,i])
+                trace_2=(high_activity_binary[:,k])
+                trace_1=pd.DataFrame(trace_1)
+                trace_2=pd.DataFrame(trace_2)
+                trace_1=trace_1.squeeze()
+                trace_2=trace_2.squeeze()
+                n_trace_1=(high_activity_trace[:,i])
+                n_trace_2=(high_activity_trace[:,k])
+                n_trace_1=pd.DataFrame(n_trace_1)
+                n_trace_2=pd.DataFrame(n_trace_2)
+                n_trace_1=n_trace_1.squeeze()
+                n_trace_2=n_trace_2.squeeze()
+                for n in range(maximum_lag*2):
+                    p=n-maximum_lag
+                    b[n]=crosscorr(trace_1,trace_2, lag=p)
+                    corr_matrx[i,k]=np.nanmax(b)
+                    
+                    index_max_corr[i,k]=np.where(b==np.nanmax(b))[0][0]
+                    
+                if corr_matrx[i,k]>=0.5:
+                    if np.sum(trace_1-trace_2)!=0:
+                        plt.figure()
+                        plt.subplot(411)
+                        plt.plot(trace_1)
+                        plt.xticks([])
+                        plt.title(str(folder_list[m])+' '+str(names[i])+' '+str(names[k]))
+                        plt.subplot(413)
+                        plt.xticks([])
+                        plt.plot(trace_2)
+                        plt.subplot(412)
+                        plt.xticks([])
+                        plt.plot(n_trace_1)
+                        plt.subplot(414)
+                        plt.plot(n_trace_2)
+                        
+                        fig_counter=fig_counter+1
+                        plt.savefig(path+'/check/'+'Unit '+str(i)+' and Unit '+str(k)+'.svg')
+                        print(fig_counter)
+                        
 
-    index_max_corr=np.abs(index_max_corr-maximum_lag)
-    all_cross_corr.append(np.concatenate(corr_matrx,axis=0))
-    all_index.append(np.concatenate(index_max_corr,axis=0))
+        index_max_corr=np.abs(index_max_corr-maximum_lag)
+        all_cross_corr.append(np.concatenate(corr_matrx,axis=0))
+        all_index.append(np.concatenate(index_max_corr,axis=0))
+
 
 all_cross_corr=np.concatenate(all_cross_corr)
 all_index=np.concatenate(all_index)
@@ -163,13 +253,14 @@ r_square=all_cross_corr**2
 
 
 plt.figure(dpi=300)
-sns.histplot(r_square)
+plt.title(str(len(r_square[r_square>0.1])*100/len(r_square))[:4]+' % '+'low activity') 
+sns.histplot(r_square[r_square>0.1], stat='probability')
 
 plt.ylabel('Count')
 plt.xlabel('r_square')
 sns.despine()
 
-plt.savefig('R_square histogram.svg')
+plt.savefig('R_square_high_active_histogram.svg')
 
 
 plt.figure(dpi=300)
@@ -179,7 +270,194 @@ plt.ylabel('Count')
 plt.xlabel('Lag')
 sns.despine()
 
-plt.savefig('Lag histogram.svg')
+plt.savefig('Lag_high_active_histogram.svg')
+
+all_cross_corr=list()
+all_index=list()
+
+for m in range(len(folder_list)):
+
+    #files=str(folder_list[m])+'\\results\\manual\\time_series.xlsx'
+    #meta=str(folder_list[m])+'\\Intervals.txt'
+    
+    files=str(folder_list[m])
+
+
+
+
+    df=pd.read_excel(files,sheet_name=None,engine='openpyxl')
+
+    
+    a=df['detrended']
+   
+    
+    
+    
+    header=list(a.columns.values)
+    v=0
+    peaks_all=np.zeros((len(header),1))
+    j=0
+    
+    
+    d=np.zeros((len(header),len(a)))
+    n_t=np.zeros((len(header),len(a)))
+    header_active=np.zeros((len(header),))
+    
+    for i in header:
+        
+        zscore=stats.zscore(a[i])
+        peaks=np.where(zscore>=2.)
+        peaks=peaks[0]
+        peak_diff=np.diff(peaks)
+        peak_diff=peak_diff
+        number_of_peaks=len(peak_diff[peak_diff>=15])
+        peaks_all[v]=number_of_peaks+1
+        #plt.axis('off')
+        binary=np.zeros((len(zscore),1))
+        normal_trace=np.zeros((len(zscore),1))
+        binary[peaks]=1
+        binary=np.reshape(binary,(len(a),))
+        if len(np.where(np.diff(binary)==1)[0])>2:
+            header_active[j]=1
+        normal_trace=np.reshape(normal_trace,(len(a),))
+        d[j]=binary
+        n_t[j]=zscore
+        j=j+1
+        
+        v=v+1
+        thr=0
+    
+    d=np.array(d)
+    d=np.transpose(d)
+    n_t=np.array(n_t) 
+    n_t=np.transpose(n_t) 
+    
+    high_activity_binary = np.zeros((d.shape[0],d.shape[1]))
+    low_activity_binary = np.zeros((d.shape[0],d.shape[1]))
+    
+    high_activity_trace = np.zeros((d.shape[0],d.shape[1]))
+    low_activity_trace = np.zeros((d.shape[0],d.shape[1]))
+    
+    
+       
+    for col in range(d.shape[1]):
+        if header_active[col]==1:
+            high_activity_binary[:,col] = d[:,col]
+            high_activity_trace[:,col]=n_t[:,col]
+        else:
+            low_activity_binary[:,col] = d[:,col]
+            low_activity_trace[:,col]=n_t[:,col]
+            
+    result_high_binary=zero_sum_cols(high_activity_binary)
+    result_low_binary=zero_sum_cols(low_activity_binary)
+         
+    high_activity_binary=np.delete(high_activity_binary,result_high_binary,1)   
+    low_activity_binary=np.delete(low_activity_binary,result_low_binary,1) 
+    
+    result_high_trace=zero_sum_cols(high_activity_trace)
+    result_low_trace=zero_sum_cols(low_activity_trace)
+         
+    high_activity_trace=np.delete(high_activity_trace,result_high_trace,1)   
+    low_activity_trace=np.delete(low_activity_trace,result_low_trace,1) 
+    
+    names=np.array(a.columns)
+    header_active=header_active.astype(int)
+    
+    high_activity_trace=pd.DataFrame(high_activity_trace)
+    high_activity_trace.columns=names[header_active==1]
+    high_activity_binary=pd.DataFrame(high_activity_binary)
+    high_activity_binary.columns=names[header_active==1]
+    
+    low_activity_trace=pd.DataFrame(low_activity_trace)
+    low_activity_trace.columns=names[header_active==0]
+    low_activity_binary=pd.DataFrame(low_activity_binary)
+    low_activity_binary.columns=names[header_active==0]
+    
+    
+    
+    names_high=list(high_activity_trace.columns)
+    names_low=list(low_activity_trace.columns)
+    
+    low_activity_trace=np.array(low_activity_trace)
+    low_activity_binary=np.array(low_activity_binary)
+    
+    ###low activity###
+    corr_matrx=np.zeros((len(names_low),len(names_low)))
+    index_max_corr=np.zeros((len(names_low),len(names_low)))
+    b=np.zeros((maximum_lag*2,1))
+    if len(names_low)>1:
+        for i in range(len(names_low)):
+            for k in range(len(names_low)):
+                trace_1=(low_activity_binary[:,i])
+                trace_2=(low_activity_binary[:,k])
+                trace_1=pd.DataFrame(trace_1)
+                trace_2=pd.DataFrame(trace_2)
+                trace_1=trace_1.squeeze()
+                trace_2=trace_2.squeeze()
+                n_trace_1=(low_activity_trace[:,i])
+                n_trace_2=(low_activity_trace[:,k])
+                n_trace_1=pd.DataFrame(n_trace_1)
+                n_trace_2=pd.DataFrame(n_trace_2)
+                n_trace_1=n_trace_1.squeeze()
+                n_trace_2=n_trace_2.squeeze()
+                for n in range(maximum_lag*2):
+                    p=n-maximum_lag
+                    b[n]=crosscorr(trace_1,trace_2, lag=p)
+                    corr_matrx[i,k]=np.nanmax(b)
+                
+                    index_max_corr[i,k]=np.where(b==np.nanmax(b))[0][0]
+            
+                if corr_matrx[i,k]>=0.5:
+                    if np.sum(trace_1-trace_2)!=0:
+                        plt.figure()
+                        plt.subplot(411)
+                        plt.plot(trace_1)
+                        plt.xticks([])
+                        plt.title(str(folder_list[m])+' '+str(names[i])+' '+str(names[k]))
+                        plt.subplot(413)
+                        plt.xticks([])
+                        plt.plot(trace_2)
+                        plt.subplot(412)
+                        plt.xticks([])
+                        plt.plot(n_trace_1)
+                        plt.subplot(414)
+                        plt.plot(n_trace_2)
+                        plt.savefig(path+'/check/'+'Unit '+str(i)+' and Unit '+str(k)+'.svg')
+                        fig_counter=fig_counter+1
+                        print(fig_counter)
+                        
+
+        index_max_corr=np.abs(index_max_corr-maximum_lag)
+        all_cross_corr.append(np.concatenate(corr_matrx,axis=0))
+        all_index.append(np.concatenate(index_max_corr,axis=0))
+    
+
+all_cross_corr=np.concatenate(all_cross_corr)
+all_index=np.concatenate(all_index)
+all_index=all_index[all_cross_corr<.99]
+all_cross_corr=all_cross_corr[all_cross_corr<.99]
+r_square=all_cross_corr**2
+
+plt.figure(dpi=300)
+plt.title(str(len(r_square[r_square>0.1])*100/len(r_square))[:4]+' % '+'low activity') 
+sns.histplot(r_square[r_square>0.1], stat='probability')
+
+plt.ylabel('Count')
+plt.xlabel('r_square')
+sns.despine()
+
+plt.savefig('R_square_low_active_histogram.svg')
+
+
+plt.figure(dpi=300)
+sns.histplot(all_index)
+
+plt.ylabel('Count')
+plt.xlabel('Lag')
+sns.despine()
+
+plt.savefig('Lag_low_active_histogram.svg')
+
 
 
 '''
